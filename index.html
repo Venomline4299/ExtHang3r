@@ -284,20 +284,30 @@
 
     populateSelectOptions();
 
-    function replaceIframes(container, iframeSrc, iframeCount) {
-      for (let i = 0; i < iframeCount; i++) {
-        const iframe = document.createElement('iframe');
-        iframe.src = iframeSrc;
-        iframe.style.width = '100%';
-        iframe.style.height = '100px';
-        container.appendChild(iframe);
-      }
-      setTimeout(function () {
-        while (container.firstChild) {
-          container.removeChild(container.firstChild);
-        }
-        replaceIframes(container, iframeSrc, iframeCount);
-      }, 5);
+function replaceIframes(container, iframeSrc, iframeCount) {
+  const batchSize = 100; // Number of iframes to load in each batch
+  const loadBatch = (start) => {
+    for (let i = start; i < Math.min(start + batchSize, iframeCount); i++) {
+      const iframe = document.createElement('iframe');
+      iframe.src = iframeSrc;
+      iframe.style.width = '100%';
+      iframe.style.height = '100px';
+      iframe.loading = 'lazy'; // Lazy loading
+      container.appendChild(iframe);
+    }
+    if (start + batchSize < iframeCount) {
+      setTimeout(() => loadBatch(start + batchSize), 100); // Load next batch after a delay
+    }
+  };
+
+  loadBatch(0);
+  setTimeout(function () {
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+    replaceIframes(container, iframeSrc, iframeCount);
+  }, 5000);
+}
     }
 
     function warning() {
