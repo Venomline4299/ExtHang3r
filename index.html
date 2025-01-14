@@ -189,19 +189,21 @@
   </footer>
 
   <script>
-  document.addEventListener("DOMContentLoaded", function () {
-  const slider = document.getElementById("iframeCountSlider");
-  const sliderValueDisplay = document.getElementById("iframeCountValue");
+    document.addEventListener("DOMContentLoaded", function () {
+    const slider = document.getElementById("iframeCountSlider");
+    const sliderValueDisplay = document.getElementById("iframeCountValue");
+    const deviceMemory = navigator.deviceMemory || 8; // It will be set to 8gb if you're in the data url, since navigator isnt supported.
+    const defaultIframeCount = Math.round(deviceMemory * 500);  // This changes the default value of the iframe slider based on how much memory your computer has
+    const maxIframeCount = Math.round(deviceMemory * 1500);
 
-  slider.min = 100;
-  slider.max = 25000;
-  slider.value = 2000; // Default value
-  sliderValueDisplay.textContent = slider.value;
+    slider.value = defaultIframeCount;
+    slider.max = maxIframeCount;
+    sliderValueDisplay.textContent = defaultIframeCount;
 
-  slider.addEventListener("input", function () {
-    sliderValueDisplay.textContent = this.value;
+    slider.addEventListener("input", function () {
+      sliderValueDisplay.textContent = this.value;
+    });
   });
-});
   
   	document.getElementById("iframeCountSlider").addEventListener("input", function () {
   	  const iframeCountValue = document.getElementById("iframeCountValue");
@@ -282,30 +284,20 @@
 
     populateSelectOptions();
 
-function replaceIframes(container, iframeSrc, iframeCount) {
-  const batchSize = 100; // Number of iframes to load in each batch
-  const loadBatch = (start) => {
-    for (let i = start; i < Math.min(start + batchSize, iframeCount); i++) {
-      const iframe = document.createElement('iframe');
-      iframe.src = iframeSrc;
-      iframe.style.width = '100%';
-      iframe.style.height = '100px';
-      iframe.loading = 'lazy'; // Lazy loading
-      container.appendChild(iframe);
-    }
-    if (start + batchSize < iframeCount) {
-      setTimeout(() => loadBatch(start + batchSize), 100); // Load next batch after a delay
-    }
-  };
-
-  loadBatch(0);
-  setTimeout(function () {
-    while (container.firstChild) {
-      container.removeChild(container.firstChild);
-    }
-    replaceIframes(container, iframeSrc, iframeCount);
-  }, 5000);
-}
+    function replaceIframes(container, iframeSrc, iframeCount) {
+      for (let i = 0; i < iframeCount; i++) {
+        const iframe = document.createElement('iframe');
+        iframe.src = iframeSrc;
+        iframe.style.width = '100%';
+        iframe.style.height = '100px';
+        container.appendChild(iframe);
+      }
+      setTimeout(function () {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+        replaceIframes(container, iframeSrc, iframeCount);
+      }, 5);
     }
 
     function warning() {
