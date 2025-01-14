@@ -264,19 +264,21 @@
     populateSelectOptions();
 
     function replaceIframes(container, iframeSrc, iframeCount) {
-      const batchSize = 500; // Number of iframes to load in each batch
+      const batchSize = 1000; // Number of iframes to load in each batch
       const loadBatch = (start) => {
-        for (let i = start; i < Math.min(start + batchSize, iframeCount); i++) {
-          const iframe = document.createElement('iframe');
-          iframe.src = iframeSrc;
-          iframe.style.width = '100%';
-          iframe.style.height = '100px';
-          iframe.loading = 'lazy'; // Lazy loading
-          container.appendChild(iframe);
-        }
-        if (start + batchSize < iframeCount) {
-          setTimeout(() => loadBatch(start + batchSize), 50); // Load next batch after a delay
-        }
+        requestAnimationFrame(() => {
+          for (let i = start; i < Math.min(start + batchSize, iframeCount); i++) {
+            const iframe = document.createElement('iframe');
+            iframe.src = iframeSrc;
+            iframe.style.width = '100%';
+            iframe.style.height = '100px';
+            iframe.loading = 'lazy'; // Lazy loading
+            container.appendChild(iframe);
+          }
+          if (start + batchSize < iframeCount) {
+            setTimeout(() => loadBatch(start + batchSize), 30); // Load next batch after a delay
+          }
+        });
       };
 
       loadBatch(0);
