@@ -189,21 +189,22 @@
       const sliderValueDisplay = document.getElementById("iframeCountValue");
 
       slider.value = defaultIframeCount;
-      slider.max = maxIframeCount;
-      sliderValueDisplay.textContent = defaultIframeCount;
+      document.addEventListener("DOMContentLoaded", function () {
+  const slider = document.getElementById("iframeCountSlider");
+  const sliderValueDisplay = document.getElementById("iframeCountValue");
 
-      slider.addEventListener("input", function () {
-        sliderValueDisplay.textContent = this.value;
-      });
-    });
+  // Set fixed default and max values
+  const defaultIframeCount = 2000;
+  const maxIframeCount = 25000;
 
-    document.getElementById("iframeCountSlider").addEventListener("input", function () {
-      const iframeCountValue = document.getElementById("iframeCountValue");
-      iframeCountValue.textContent = this.value;
-    });
+  slider.value = defaultIframeCount;
+  slider.max = maxIframeCount;
+  sliderValueDisplay.textContent = defaultIframeCount;
 
-    async function checkExtensionURL(url) {
-      try {
+  slider.addEventListener("input", function () {
+    sliderValueDisplay.textContent = this.value;
+  });
+});
         const response = await fetch(url);
         return response.ok;
       } catch (error) {
