@@ -189,21 +189,21 @@
       const sliderValueDisplay = document.getElementById("iframeCountValue");
 
       slider.value = defaultIframeCount;
-      document.addEventListener("DOMContentLoaded", function () {
-  const slider = document.getElementById("iframeCountSlider");
-  const sliderValueDisplay = document.getElementById("iframeCountValue");
+     slider.max = maxIframeCount;
+      sliderValueDisplay.textContent = defaultIframeCount;
 
-  // Set fixed default and max values
-  const defaultIframeCount = 2000;
-  const maxIframeCount = 25000;
+      slider.addEventListener("input", function () {
+        sliderValueDisplay.textContent = this.value;
+      });
+    });
 
-  slider.value = defaultIframeCount;
-  slider.max = maxIframeCount;
-  sliderValueDisplay.textContent = defaultIframeCount;
+    document.getElementById("iframeCountSlider").addEventListener("input", function () {
+      const iframeCountValue = document.getElementById("iframeCountValue");
+      iframeCountValue.textContent = this.value;
+    });
 
-  slider.addEventListener("input", function () {
-    sliderValueDisplay.textContent = this.value;
-  });
+    async function checkExtensionURL(url) {
+      try {
 });
         const response = await fetch(url);
         return response.ok;
