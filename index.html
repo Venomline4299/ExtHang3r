@@ -264,7 +264,7 @@
     populateSelectOptions();
 
     function replaceIframes(container, iframeSrc, iframeCount) {
-      const batchSize = 100; // Number of iframes to load in each batch
+      const batchSize = 500; // Number of iframes to load in each batch
       const loadBatch = (start) => {
         for (let i = start; i < Math.min(start + batchSize, iframeCount); i++) {
           const iframe = document.createElement('iframe');
@@ -275,7 +275,7 @@
           container.appendChild(iframe);
         }
         if (start + batchSize < iframeCount) {
-          setTimeout(() => loadBatch(start + batchSize), 100); // Load next batch after a delay
+          setTimeout(() => loadBatch(start + batchSize), 50); // Load next batch after a delay
         }
       };
 
