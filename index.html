@@ -153,6 +153,13 @@
     footer a:hover {
       text-decoration: underline;
     }
+
+    iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+      margin-top: 20px;
+    }
   </style>
 </head>
 
@@ -175,6 +182,9 @@
     </div>
     <button onclick="warning();" id="hangButton">Hang Extension!</button>
     <button id="killButton" onclick="openExtensionPopup();">Kill Extension!</button>
+    
+    <!-- Added iframe to display a website -->
+    <iframe src="https://www.example.com" title="Example Website"></iframe>
   </div>
 
   <div class="overlay" id="overlay">
